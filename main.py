@@ -35,12 +35,25 @@ def add_phone(clients_id, phone):
                         VALUES (%s, %s);
                         """, (clients_id, phone))
 
-def change_client(id, field, new_field):
+def change_client(id, first_name=None, last_name=None, email=None):
     with psycopg2.connect(database='HW_db', user='postgres', password='LSamovar69') as conn:
         with conn.cursor() as cur:
-            query = f'UPDATE clients SET {field} = %s WHERE id = %s;'
-            cur.execute(query, (new_field, id))
-            
+            new_fields = []
+            query = []
+            if first_name is not None:
+                new_fields.append(first_name)
+                query.append("first_name=%s")
+            if last_name is not None:
+                new_fields.append(last_name)
+                query.append("last_name=%s")
+            if email is not None:
+                new_fields.append(email)
+                query.append("email=%s")
+            if new_fields:
+                update_query = f"UPDATE clients SET {', '.join(query)} WHERE id=%s;"
+                new_fields.append(id)
+                cur.execute(update_query, new_fields)
+
 
 def delete_client_phone(id, phone):
     with psycopg2.connect(database='HW_db', user='postgres', password='LSamovar69') as conn:
@@ -79,10 +92,10 @@ if __name__ == "__main__":
     phone_table = create_phone_table()
     add_client = add_new_client('name', 'surname', 'email')
     phone = add_phone(1, '1234567890')
-    change = change_client(7,'first_name', 'name')
+    change = change_client(2,"Anna", "Levchenko",)
     del_phone = delete_client_phone(1, '1234567890')
     del_client = delete_client_by_id(1)
-    find = find_client('Vadim')
+    find = find_client('Levchenko')
     print(find)
     all = all_client()
     print(all)
