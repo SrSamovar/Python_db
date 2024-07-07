@@ -35,12 +35,12 @@ def add_phone(clients_id, phone):
                         VALUES (%s, %s);
                         """, (clients_id, phone))
 
-def change_client(id, first_name=None, last_name=None, email=None):
+def change_client(id, field, new_field):
     with psycopg2.connect(database='HW_db', user='postgres', password='LSamovar69') as conn:
         with conn.cursor() as cur:
-            cur.execute("""UPDATE clients SET first_name=%s, last_name=%s, email=%s
-                        WHERE id=%s;
-                        """, (first_name, last_name, email, id))
+            query = f'UPDATE clients SET {field} = %s WHERE id = %s;'
+            cur.execute(query, (new_field, id))
+            
 
 def delete_client_phone(id, phone):
     with psycopg2.connect(database='HW_db', user='postgres', password='LSamovar69') as conn:
@@ -56,14 +56,21 @@ def delete_client_by_id(id):
                         WHERE id=%s;
                         """, (id,))
 
-def find_client(first_name=None, last_name=None, email=None):
+def find_client(search="%"):
     with psycopg2.connect(database='HW_db', user='postgres', password='LSamovar69') as conn:
         with conn.cursor() as cur:
             cur.execute("""SELECT * 
                         FROM clients
-                        WHERE first_name=%s OR last_name=%s OR email=%s;
-                        """, (first_name, last_name, email))
+                        WHERE first_name LIKE %s OR last_name LIKE %s OR email LIKE %s;
+                        """, (f'%{search}%',f'%{search}%',f'%{search}%'))
             result = cur.fetchone()
+            return result
+        
+def all_client():
+    with psycopg2.connect(database='HW_db', user='postgres', password='LSamovar69') as conn:
+        with conn.cursor() as cur:
+            cur.execute("""SELECT * FROM clients;""")
+            result = cur.fetchall()
             return result
 
 
@@ -72,8 +79,10 @@ if __name__ == "__main__":
     phone_table = create_phone_table()
     add_client = add_new_client('name', 'surname', 'email')
     phone = add_phone(1, '1234567890')
-    change = change_client(1,'new_name')
+    change = change_client(7,'first_name', 'name')
     del_phone = delete_client_phone(1, '1234567890')
     del_client = delete_client_by_id(1)
-    find = find_client('name')
+    find = find_client('Vadim')
     print(find)
+    all = all_client()
+    print(all)
